@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindEase - Your AI Therapist Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom CSS for animations and additional styling */
+        .chat-container {
+            height: 65vh;
+            transition: all 0.3s ease;
+        }
+        
+        .message {
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .user-message {
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 18px 18px 0 18px;
+        }
+        
+        .bot-message {
+            background-color: #f3f4f6;
+            color: #1f2937;
+            border-radius: 18px 18px 18px 0;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .typing-indicator::after {
+            content: '...';
+            animation: typing 1.5s infinite;
+        }
+        
+        @keyframes typing {
+            0% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-brain text-blue-500 text-2xl mr-2"></i>
+                    <span class="text-xl font-bold text-blue-600">MindEase</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#" class="text-gray-700 hover:text-blue-600">Home</a>
+                    <a href="#" class="text-gray-700 hover:text-blue-600">About</a>
+                    <a href="#" class="text-gray-700 hover:text-blue-600">Resources</a>
+                    <a href="#" class="text-gray-700 hover:text-blue-600">Contact</a>
+                </div>
+                <button class="md:hidden text-gray-700">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-16">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 mb-8 md:mb-0">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">Your AI Therapist Companion</h1>
+                <p class="text-xl mb-6">Available 24/7 to listen, support, and guide you through life's challenges.</p>
+                <div class="flex space-x-4">
+                    <button id="start-chat-btn" class="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold hover:bg-gray-100 transition duration-300 pulse">
+                        Start Chatting Now <i class="fas fa-comment-dots ml-2"></i>
+                    </button>
+                    <button class="border-2 border-white text-white px-6 py-3 rounded-full font-semibold hover:bg-white hover:text-blue-600 transition duration-300">
+                        Learn More
+                    </button>
+                </div>
+            </div>
+            <div class="md:w-1/2 flex justify-center">
+                <img src="https://illustrations.popsy.co/amber/digital-nomad.svg" alt="Mental health illustration" class="w-4/5">
+            </div>
+        </div>
+    </section>
+
+    <!-- Chat Section -->
+    <section id="chat-section" class="max-w-4xl mx-auto px-4 py-12 hidden">
+        <div class="bg-white rounded-xl shadow-xl overflow-hidden">
+            <!-- Chat Header -->
+            <div class="bg-blue-600 text-white px-6 py-4 flex items-center">
+                <div class="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center mr-3">
+                    <i class="fas fa-robot text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold">MindEase Therapist</h3>
+                    <p class="text-xs text-blue-100">Online - Ready to help</p>
+                </div>
+                <div class="ml-auto flex space-x-3">
+                    <button class="text-blue-200 hover:text-white">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <button id="close-chat-btn" class="text-blue-200 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Chat Messages Container -->
+            <div id="chat-messages" class="chat-container p-4 overflow-y-auto bg-gray-50">
+                <div class="message bot-message px-4 py-3 mb-3">
+                    <p>Hello there! I'm MindEase, your AI therapist companion. I'm here to listen and help you navigate through your thoughts and feelings. How are you doing today?</p>
+                </div>
+                <div class="message bot-message px-4 py-3 mb-3">
+                    <p>Before we begin, please remember that while I can provide support, I'm not a replacement for professional medical advice. If you're in crisis, please contact emergency services or a licensed therapist.</p>
+                </div>
+                <div class="message bot-message px-4 py-3 mb-3">
+                    <p>What would you like to talk about today?</p>
+                </div>
+            </div>
+            
+            <!-- Chat Input -->
+            <div class="bg-white border-t border-gray-200 p-4">
+                <div class="flex items-center">
+                    <button class="text-gray-500 hover:text-blue-600 mx-2">
+                        <i class="far fa-smile text-xl"></i>
+                    </button>
+                    <input id="user-input" type="text" placeholder="Type your message here..." class="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <button id="send-btn" class="bg-blue-600 text-white rounded-full p-2 ml-2 hover:bg-blue-700 transition duration-300">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <p class="text-xs text-gray-500 mt-2 text-center">MindEase respects your privacy. Conversations are encrypted and anonymous.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-16 bg-white">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">How MindEase Can Help You</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-gray-50 p-6 rounded-xl hover:shadow-lg transition duration-300">
+                    <div class="text-blue-500 mb-4">
+                        <i class="fas fa-head-side-virus text-4xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Anxiety & Stress</h3>
+                    <p class="text-gray-600">Learn coping strategies and mindfulness techniques to manage daily stressors and anxious thoughts.</p>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-xl hover:shadow-lg transition duration-300">
+                    <div class="text-blue-500 mb-4">
+                        <i class="fas fa-cloud-sun text-4xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Mood Tracking</h3>
+                    <p class="text-gray-600">Track your emotional patterns over time and gain insights into your mental wellbeing.</p>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-xl hover:shadow-lg transition duration-300">
+                    <div class="text-blue-500 mb-4">
+                        <i class="fas fa-hands-helping text-4xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">CBT Techniques</h3>
+                    <p class="text-gray-600">Access Cognitive Behavioral Therapy exercises to challenge negative thought patterns.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="py-16 bg-gray-100">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">What People Are Saying</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+                            <i class="fas fa-user text-blue-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">Sarah K.</h4>
+                            <p class="text-gray-500 text-sm">Using MindEase for 3 months</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700">"MindEase has been incredibly helpful for my anxiety. Having someone to talk to anytime I need has made a huge difference in my daily life."</p>
+                    <div class="flex mt-3 text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+                            <i class="fas fa-user text-blue-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">Michael T.</h4>
+                            <p class="text-gray-500 text-sm">Using MindEase for 6 weeks</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700">"The CBT exercises have helped me recognize negative thought patterns I wasn't even aware of. It's like having a therapist in my pocket."</p>
+                    <div class="flex mt-3 text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-brain text-blue-400 mr-2"></i> MindEase
+                    </h3>
+                    <p class="text-gray-400">Your 24/7 AI therapist companion, here to support your mental wellbeing journey.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Home</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">About</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Resources</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Legal</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Disclaimer</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Emergency Resources</h4>
+                    <p class="text-gray-400 mb-2">If you're in crisis, please contact:</p>
+                    <ul class="space-y-1 text-sm">
+                        <li><a href="#" class="text-blue-400 hover:underline">National Suicide Prevention Lifeline</a></li>
+                        <li><a href="#" class="text-blue-400 hover:underline">Crisis Text Line</a></li>
+                        <li><a href="#" class="text-blue-400 hover:underline">Local Emergency Services</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2023 MindEase. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Chatbot Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const startChatBtn = document.getElementById('start-chat-btn');
+            const closeChatBtn = document.getElementById('close-chat-btn');
+            const chatSection = document.getElementById('chat-section');
+            const userInput = document.getElementById('user-input');
+            const sendBtn = document.getElementById('send-btn');
+            const chatMessages = document.getElementById('chat-messages');
+            
+            // Show chat section when start button is clicked
+            startChatBtn.addEventListener('click', function() {
+                chatSection.classList.remove('hidden');
+                window.scrollTo({
+                    top: chatSection.offsetTop,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // Hide chat section when close button is clicked
+            closeChatBtn.addEventListener('click', function() {
+                chatSection.classList.add('hidden');
+            });
+            
+            // Send message when send button is clicked or Enter is pressed
+            sendBtn.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            // Function to send a message
+            function sendMessage() {
+                const message = userInput.value.trim();
+                if (message === '') return;
+                
+                // Add user message to chat
+                addMessage(message, 'user');
+                userInput.value = '';
+                
+                // Show typing indicator
+                const typingIndicator = document.createElement('div');
+                typingIndicator.className = 'message bot-message px-4 py-3 mb-3 typing-indicator';
+                typingIndicator.innerHTML = '<p>MindEase is typing</p>';
+                chatMessages.appendChild(typingIndicator);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // Simulate bot response after a delay
+                setTimeout(() => {
+                    // Remove typing indicator
+                    chatMessages.removeChild(typingIndicator);
+                    
+                    // Generate bot response
+                    const botResponse = generateResponse(message);
+                    addMessage(botResponse, 'bot');
+                }, 1500);
+            }
+            
+            // Function to add a message to the chat
+            function addMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}-message px-4 py-3 mb-3`;
+                messageDiv.innerHTML = `<p>${text}</p>`;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Function to generate bot responses (simplified for demo)
+            function generateResponse(userMessage) {
+                const lowerMessage = userMessage.toLowerCase();
+                
+                // Greetings
+                if (lowerMessage.includes('hi') || lowerMessage.includes('hello') || lowerMessage.includes('hey')) {
+                    return "Hello! How are you feeling today?";
+                }
+                
+                // Feeling-related responses
+                if (lowerMessage.includes('feel') || lowerMessage.includes('feeling')) {
+                    if (lowerMessage.includes('anxious') || lowerMessage.includes('nervous') || lowerMessage.includes('stressed')) {
+                        return "I hear that you're feeling anxious. That's completely understandable. Would you like to talk about what's causing these feelings?";
+                    }
+                    if (lowerMessage.includes('sad') || lowerMessage.includes('depressed') || lowerMessage.includes('down')) {
+                        return "I'm sorry to hear you're feeling this way. It takes courage to acknowledge these feelings. Would you like to explore them together?";
+                    }
+                    if (lowerMessage.includes('happy') || lowerMessage.includes('good') || lowerMessage.includes('great')) {
+                        return "I'm glad to hear you're feeling positive! What's contributing to these good feelings today?";
+                    }
+                    return "I understand you're talking about how you feel. Can you tell me more about these emotions?";
+                }
+                
+                // Problem-related responses
+                if (lowerMessage.includes('problem') || lowerMessage.includes('issue') || lowerMessage.includes('trouble')) {
+                    return "It sounds like you're dealing with a challenging situation. Would it help to break it down and look at it piece by piece?";
+                }
+                
+                // Sleep-related responses
+                if (lowerMessage.includes('sleep') || lowerMessage.includes('insomnia') || lowerMessage.includes('tired')) {
+                    return "Sleep difficulties can really impact your wellbeing. Have you tried establishing a relaxing bedtime routine? I can suggest some techniques if you'd like.";
+                }
+                
+                // Default responses
+                const defaultResponses = [
+                    "I hear what you're saying. Can you elaborate on that?",
+                    "That's interesting. Tell me more about this.",
+                    "I'm here to listen. What else is on your mind?",
+                    "I understand. How does this make you feel?",
+                    "Thank you for sharing that. Would you like to explore this further?"
+                ];
+                
+                return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+            }
+            
+            // Add some initial bot messages if the chat is empty
+            if (chatMessages.children.length === 0) {
+                addMessage("Hello there! I'm MindEase, your AI therapist companion. I'm here to listen and help you navigate through your thoughts and feelings. How are you doing today?", 'bot');
+                addMessage("Before we begin, please remember that while I can provide support, I'm not a replacement for professional medical advice. If you're in crisis, please contact emergency services or a licensed therapist.", 'bot');
+                addMessage("What would you like to talk about today?", 'bot');
+            }
+        });
+    </script>
+</body>
+</html>
