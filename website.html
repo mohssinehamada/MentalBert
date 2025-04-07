@@ -320,15 +320,74 @@
                 chatMessages.appendChild(typingIndicator);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
                 
-                // Simulate bot response after a delay
-                setTimeout(() => {
+                // Call the API to analyze the message
+                fetch('http://localhost:8080/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message }),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
                     // Remove typing indicator
                     chatMessages.removeChild(typingIndicator);
                     
-                    // Generate bot response
-                    const botResponse = generateResponse(message);
-                    addMessage(botResponse, 'bot');
-                }, 1500);
+                    if (data.error) {
+                        addMessage("I'm sorry, I encountered an error: " + data.error, 'bot');
+                        return;
+                    }
+                    
+                    // Add the bot's response
+                    addMessage(data.response, 'bot');
+                    
+                    // If this is a crisis situation, add emergency resources in a prominent way
+                    if (data.crisis) {
+                        const emergencyDiv = document.createElement('div');
+                        emergencyDiv.className = 'message bot-message px-4 py-3 mb-3 bg-red-100 border-l-4 border-red-500';
+                        emergencyDiv.innerHTML = `
+                            <p class="font-bold text-red-700 mb-2">Emergency Resources Available 24/7:</p>
+                            <ul class="list-disc list-inside text-red-600">
+                                <li>National Suicide Prevention Lifeline: 988</li>
+                                <li>Crisis Text Line: Text HOME to 741741</li>
+                                <li>Emergency Services: 911</li>
+                            </ul>
+                        `;
+                        chatMessages.appendChild(emergencyDiv);
+                    }
+                    
+                    // Optionally display analysis results
+                    if (data.analysis) {
+                        const sentimentPercent = Math.round(data.analysis.sentiment * 100);
+                        const mentalHealthPercent = Math.round(data.analysis.mental_health_indicator * 100);
+                        
+                        // Add analysis indicator with appropriate styling
+                        const analysisDiv = document.createElement('div');
+                        analysisDiv.className = `message bot-message px-4 py-2 mb-3 text-xs ${
+                            data.crisis ? 'bg-red-50 text-red-700' : 'text-gray-500'
+                        }`;
+                        analysisDiv.innerHTML = `<p>Analysis: Sentiment ${sentimentPercent}% positive, Mental Health ${mentalHealthPercent}%</p>`;
+                        chatMessages.appendChild(analysisDiv);
+                    }
+                    
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Remove typing indicator
+                    if (typingIndicator.parentNode) {
+                        chatMessages.removeChild(typingIndicator);
+                    }
+                    
+                    // Show error message
+                    addMessage("I'm sorry, I encountered an error connecting to the server. Please try again in a moment.", 'bot');
+                });
             }
             
             // Function to add a message to the chat
@@ -338,51 +397,6 @@
                 messageDiv.innerHTML = `<p>${text}</p>`;
                 chatMessages.appendChild(messageDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-            
-            // Function to generate bot responses (simplified for demo)
-            function generateResponse(userMessage) {
-                const lowerMessage = userMessage.toLowerCase();
-                
-                // Greetings
-                if (lowerMessage.includes('hi') || lowerMessage.includes('hello') || lowerMessage.includes('hey')) {
-                    return "Hello! How are you feeling today?";
-                }
-                
-                // Feeling-related responses
-                if (lowerMessage.includes('feel') || lowerMessage.includes('feeling')) {
-                    if (lowerMessage.includes('anxious') || lowerMessage.includes('nervous') || lowerMessage.includes('stressed')) {
-                        return "I hear that you're feeling anxious. That's completely understandable. Would you like to talk about what's causing these feelings?";
-                    }
-                    if (lowerMessage.includes('sad') || lowerMessage.includes('depressed') || lowerMessage.includes('down')) {
-                        return "I'm sorry to hear you're feeling this way. It takes courage to acknowledge these feelings. Would you like to explore them together?";
-                    }
-                    if (lowerMessage.includes('happy') || lowerMessage.includes('good') || lowerMessage.includes('great')) {
-                        return "I'm glad to hear you're feeling positive! What's contributing to these good feelings today?";
-                    }
-                    return "I understand you're talking about how you feel. Can you tell me more about these emotions?";
-                }
-                
-                // Problem-related responses
-                if (lowerMessage.includes('problem') || lowerMessage.includes('issue') || lowerMessage.includes('trouble')) {
-                    return "It sounds like you're dealing with a challenging situation. Would it help to break it down and look at it piece by piece?";
-                }
-                
-                // Sleep-related responses
-                if (lowerMessage.includes('sleep') || lowerMessage.includes('insomnia') || lowerMessage.includes('tired')) {
-                    return "Sleep difficulties can really impact your wellbeing. Have you tried establishing a relaxing bedtime routine? I can suggest some techniques if you'd like.";
-                }
-                
-                // Default responses
-                const defaultResponses = [
-                    "I hear what you're saying. Can you elaborate on that?",
-                    "That's interesting. Tell me more about this.",
-                    "I'm here to listen. What else is on your mind?",
-                    "I understand. How does this make you feel?",
-                    "Thank you for sharing that. Would you like to explore this further?"
-                ];
-                
-                return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
             }
             
             // Add some initial bot messages if the chat is empty
